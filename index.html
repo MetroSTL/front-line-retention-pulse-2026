@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Metro Transit Retention Pulse Survey</title>
+<style>
+  /* =========================================================================
+     Metro Transit Retention Pulse Survey
+     Single-file HTML form. Posts to AGOL Feature Service addFeatures endpoint.
+     Brand: Navy #001E62, Gold #EA7600 (stars), Red #DF3226 (required),
+            Gray #63666A, text #2a2a2a.
+     Canonical content: C:\git\cc_run\pulse\Metro-Transit-Retention-Pulse-Survey-April-2026.docx
+     Field names: C:\git\cc_run\pulse\survey123\Metro-Retention-Pulse-2026.xlsx
+     ========================================================================= */
+  :root {
+    --navy:      #001E62;
+    --navy-dark: #00164a;
+    --navy-tint: #e8edf5;
+    --gold:      #EA7600;
+    --gold-tint: #fff5e6;
+    --red:       #DF3226;
+    --red-stripe:#E03C31;
+    --gray:      #63666A;
+    --text:      #2a2a2a;
+    --rule:      #e0e0e0;
+    --bg:        #f4f4f4;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.45;
+    padding: 0 0 60px 0;
+  }
+  .card {
+    max-width: 520px;
+    margin: 0 auto;
+    background: #fff;
+    position: relative;
+    min-height: 100vh;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.04);
+  }
+  .card::before {
+    content: "";
+    display: block;
+    height: 3px;
+    background: var(--red-stripe);
+  }
+  .title-bar {
+    background: var(--navy);
+    color: #fff;
+    padding: 16px 20px 14px 20px;
+  }
+  .title-bar h1 {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: 0.01em;
+  }
+  .title-bar p {
+    margin: 4px 0 0 0;
+    font-size: 12px;
+    opacity: 0.85;
+  }
+  .callout {
+    background: var(--navy-tint);
+    border-left: 4px solid var(--navy);
+    padding: 14px 16px;
+    margin: 16px 16px 0 16px;
+    font-size: 13px;
+    border-radius: 0 3px 3px 0;
+  }
+  .callout strong { color: var(--navy); }
+  .section-header {
+    background: var(--navy-tint);
+    border-left: 4px solid var(--navy);
+    color: var(--navy);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 10px 16px;
+    margin: 20px 0 6px 0;
+    border-radius: 0 3px 3px 0;
+  }
+  .section-intro {
+    font-size: 12.5px;
+    font-style: italic;
+    color: var(--gray);
+    padding: 0 20px 4px 20px;
+  }
+  .q {
+    padding: 14px 20px;
+    border-bottom: 1px solid #f2f2f2;
+  }
+  .q-label {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .q-label .req { color: var(--red); margin-left: 2px; }
+  .choices { display: flex; flex-direction: column; gap: 6px; }
+  .choices label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid #d6d6d6;
+    border-radius: 3px;
+    background: #fff;
+    font-size: 13.5px;
+    cursor: pointer;
+    min-height: 40px;
+  }
+  .choices label:hover { background: #f6f8fc; }
+  .choices label:has(input:checked) {
+    border-color: var(--navy);
+    background: var(--navy-tint);
+  }
+  .choices input[type="radio"],
+  .choices input[type="checkbox"] {
+    accent-color: var(--navy);
+    width: 18px; height: 18px;
+    margin: 0;
+    flex-shrink: 0;
+  }
+  .other-text {
+    margin-top: 8px;
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid #cfd4dc;
+    border-radius: 3px;
+    font-size: 13px;
+    font-family: inherit;
+  }
+  .other-text:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 2px rgba(0,30,98,0.15); }
+
+  /* ========== Section A matrix ========== */
+  .matrix-wrap { padding: 0 16px; }
+  .matrix-intro {
+    font-size: 13px;
+    color: var(--text);
+    margin: 6px 4px 10px 4px;
+  }
+  .matrix-legend {
+    font-size: 10.5px;
+    color: #e8edf5;
+    background: var(--navy-dark);
+    padding: 5px 12px 6px 12px;
+    line-height: 1.35;
+    text-align: center;
+    letter-spacing: 0.01em;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .matrix-legend strong { color: var(--gold); font-weight: 700; }
+  .matrix-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    border-radius: 3px 3px 0 0;
+    overflow: hidden;
+  }
+  .matrix-header {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) 28px 28px 28px 28px 32px;
+    gap: 4px;
+    align-items: center;
+    background: var(--navy);
+    color: #fff;
+    padding: 10px 12px 8px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  .matrix-header .hdr-cell { text-align: center; }
+  .matrix-header .hdr-stmt { text-align: left; }
+  .matrix-header .hdr-star { color: var(--gold); font-size: 13px; }
+  .matrix-substrip {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--navy-dark);
+    color: #fff;
+    padding: 6px 12px;
+    font-size: 11.5px;
+  }
+  .matrix-substrip .star-count { font-weight: 700; color: var(--gold); }
+  .matrix-row {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) 28px 28px 28px 28px 32px;
+    gap: 4px;
+    align-items: center;
+    padding: 8px 12px;
+    background: #fff;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 13px;
+    transition: background 0.15s ease;
+  }
+  .matrix-row.is-starred {
+    background: linear-gradient(to right, var(--gold-tint) 0%, #fffaf0 100%);
+  }
+  .matrix-row .stmt {
+    padding-right: 6px;
+    line-height: 1.3;
+  }
+  .matrix-row .rate,
+  .matrix-row .star {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 36px;
+  }
+  .matrix-row input[type="radio"] {
+    accent-color: var(--navy);
+    width: 18px; height: 18px;
+    margin: 0;
+    cursor: pointer;
+  }
+  .matrix-row .star-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 32px;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+    border-radius: 3px;
+    font-size: 18px;
+    color: #c9b673;
+  }
+  .matrix-row .star-label input {
+    position: absolute;
+    opacity: 0;
+    width: 100%; height: 100%;
+    cursor: pointer;
+    margin: 0;
+  }
+  .matrix-row.is-starred .star-label {
+    color: var(--gold);
+    text-shadow: 0 0 3px rgba(234,118,0,0.45);
+    background: var(--gold-tint);
+  }
+
+  /* ========== Role-gated Section C boxes ========== */
+  .role-box {
+    border: 1px solid #c8c8c8;
+    border-radius: 4px;
+    margin: 10px 20px;
+    padding: 10px 14px;
+    background: #fafafa;
+  }
+  .role-box-title {
+    font-weight: 700;
+    font-size: 12.5px;
+    color: var(--navy);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 8px 0;
+  }
+  .role-box[hidden] { display: none; }
+  .role-empty {
+    margin: 10px 20px;
+    padding: 14px 16px;
+    border: 1px dashed #c8c8c8;
+    border-radius: 4px;
+    background: #fafafa;
+    color: var(--gray);
+    font-size: 13px;
+    font-style: italic;
+    text-align: center;
+  }
+  .role-empty[hidden] { display: none; }
+
+  /* ========== Submit + status ========== */
+  .submit-wrap { padding: 20px 16px 8px 16px; }
+  .submit-btn {
+    display: block;
+    width: 100%;
+    background: var(--navy);
+    color: #fff;
+    border: 0;
+    border-radius: 3px;
+    padding: 14px 16px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+  }
+  .submit-btn:hover { background: var(--navy-dark); }
+  .submit-btn:disabled { opacity: 0.55; cursor: wait; }
+  .status {
+    margin: 14px 16px 0 16px;
+    padding: 12px 14px;
+    border-radius: 3px;
+    font-size: 13px;
+    display: none;
+  }
+  .status.is-error {
+    display: block;
+    background: #fcece9;
+    border-left: 4px solid var(--red);
+    color: #8a1e15;
+  }
+  .status.is-success {
+    display: block;
+    background: #eaf6ea;
+    border-left: 4px solid #2d7a3b;
+    color: #1f5629;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .thanks {
+    display: none;
+    padding: 40px 24px;
+    text-align: center;
+  }
+  .thanks h2 { color: var(--navy); font-size: 20px; margin: 0 0 10px 0; }
+  .thanks p { color: var(--gray); font-size: 14px; }
+
+  /* Textarea */
+  textarea.q29 {
+    width: 100%;
+    min-height: 110px;
+    padding: 10px 12px;
+    border: 1px solid #cfd4dc;
+    border-radius: 3px;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+  }
+  textarea.q29:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 2px rgba(0,30,98,0.15); }
+
+  /* Narrow phone tweaks */
+  @media (max-width: 380px) {
+    .matrix-header, .matrix-row {
+      grid-template-columns: minmax(0,1fr) 24px 24px 24px 24px 28px;
+      gap: 3px;
+      padding: 8px 10px;
+    }
+    .matrix-row .star-label { width: 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="title-bar">
+    <h1>Metro Transit Retention Pulse Survey</h1>
+    <p>For Frontline Employees: Operators, Mechanics/Maintenance, and Clerical/Admin Support</p>
+  </div>
+
+  <div id="form-wrap">
+    <div class="callout">
+      <p style="margin:0 0 8px 0;"><strong>Why we're asking.</strong> To identify specific changes Metro Transit can make to improve front-line retention and reduce daily call-offs. Your answers will directly shape what leadership prioritizes.</p>
+      <p style="margin:0;"><strong>How is your privacy protected?</strong> No name or badge number collected. Results reported by role and location for groups of 10 or more only. Written comments will be paraphrased, not quoted, in any report.</p>
+    </div>
+
+    <form id="pulse-form" novalidate>
+
+      <!-- Q1 Retention -->
+      <div class="q">
+        <div class="q-label">1. Over the next 12 months, how likely are you to still be working at Metro Transit / Bi-State?<span class="req">*</span></div>
+        <div class="choices">
+          <label><input type="radio" name="retention" value="very_likely" required> Very likely</label>
+          <label><input type="radio" name="retention" value="likely"> Likely</label>
+          <label><input type="radio" name="retention" value="unsure"> Unsure</label>
+          <label><input type="radio" name="retention" value="unlikely"> Unlikely</label>
+          <label><input type="radio" name="retention" value="very_unlikely"> Very unlikely</label>
+        </div>
+      </div>
+
+      <!-- Section A -->
+      <div class="section-header">Section A: Your current experience at Metro</div>
+      <div class="section-intro">Rate each statement, then tap the &#9733; for the top 3 items Metro should focus on first.</div>
+      <div class="matrix-wrap">
+        <div class="matrix-sticky">
+          <div class="matrix-legend"><strong>SA</strong>=Strongly Agree &nbsp;·&nbsp; <strong>A</strong>=Agree &nbsp;·&nbsp; <strong>D</strong>=Disagree &nbsp;·&nbsp; <strong>SD</strong>=Strongly Disagree</div>
+          <div class="matrix-substrip">
+            <span>Tap &#9733; for your top 3 priorities</span>
+            <span><span class="star-count" id="star-count">0</span> / 3</span>
+          </div>
+          <div class="matrix-header" role="row">
+            <div class="hdr-cell hdr-stmt">STATEMENT</div>
+            <div class="hdr-cell">SA</div>
+            <div class="hdr-cell">A</div>
+            <div class="hdr-cell">D</div>
+            <div class="hdr-cell">SD</div>
+            <div class="hdr-cell hdr-star">&#9733;</div>
+          </div>
+        </div>
+        <div id="matrix-body"><!-- populated by script for 18 rows --></div>
+      </div>
+
+      <!-- Section B -->
+      <div class="section-header">Section B: How often things happen</div>
+      <div class="q">
+        <div class="q-label">20. How often do you feel stressed at work?<span class="req">*</span></div>
+        <div class="choices">
+          <label><input type="radio" name="q20_stress" value="never" required> Never</label>
+          <label><input type="radio" name="q20_stress" value="rarely"> Rarely</label>
+          <label><input type="radio" name="q20_stress" value="monthly"> A few times a month</label>
+          <label><input type="radio" name="q20_stress" value="weekly"> Once or twice a week</label>
+          <label><input type="radio" name="q20_stress" value="daily"> Daily</label>
+        </div>
+      </div>
+      <div class="q">
+        <div class="q-label">21. How often do you experience verbally abusive or hostile interactions from passengers, coworkers, supervisors, or the public?<span class="req">*</span></div>
+        <div class="choices">
+          <label><input type="radio" name="q21_verbal" value="never" required> Never</label>
+          <label><input type="radio" name="q21_verbal" value="rarely"> Rarely</label>
+          <label><input type="radio" name="q21_verbal" value="monthly"> A few times a month</label>
+          <label><input type="radio" name="q21_verbal" value="weekly"> Once or twice a week</label>
+          <label><input type="radio" name="q21_verbal" value="daily"> Daily</label>
+        </div>
+      </div>
+      <div class="q">
+        <div class="q-label">22. How often do you experience interactions that are physically threatening (threats of violence, assault, weapon involved)?<span class="req">*</span></div>
+        <div class="choices">
+          <label><input type="radio" name="q22_physical" value="never" required> Never</label>
+          <label><input type="radio" name="q22_physical" value="rarely"> Rarely</label>
+          <label><input type="radio" name="q22_physical" value="monthly"> A few times a month</label>
+          <label><input type="radio" name="q22_physical" value="weekly"> Once or twice a week</label>
+          <label><input type="radio" name="q22_physical" value="daily"> Daily</label>
+        </div>
+      </div>
+
+      <!-- 23a. Role (moved here so the role-gated 23b that follows makes sense in flow) -->
+      <div class="q">
+        <div class="q-label">23a. Your role:<span class="req">*</span></div>
+        <div class="choices">
+          <label><input type="radio" name="role" value="operator" required> Operator / Driver</label>
+          <label><input type="radio" name="role" value="mechanic"> Mechanic / Maintenance</label>
+          <label><input type="radio" name="role" value="clerical"> Clerical / Admin Support</label>
+        </div>
+      </div>
+
+      <!-- Section C -->
+      <div class="section-header">Section C: Scheduling preferences</div>
+      <div class="section-intro">Please answer only the box that matches your role.</div>
+
+      <div class="role-empty" id="q23_empty">
+        Select your role in Q23a above to see your scheduling options.
+      </div>
+
+      <div class="role-box" id="q23_op_box" hidden>
+        <div class="role-box-title">23b. Operator / Driver &mdash; pick up to 3:</div>
+        <div class="choices">
+          <label><input type="checkbox" name="q23_op" value="early_straight"> Early straight</label>
+          <label><input type="checkbox" name="q23_op" value="midday_straight"> Mid-day straight</label>
+          <label><input type="checkbox" name="q23_op" value="evening_straight"> Evening straight</label>
+          <label><input type="checkbox" name="q23_op" value="split_short"> Split (&lt;1 hr gap)</label>
+          <label><input type="checkbox" name="q23_op" value="split_long"> Split (2&ndash;3 hr gap)</label>
+          <label><input type="checkbox" name="q23_op" value="weekend"> Weekend work</label>
+          <label><input type="checkbox" name="q23_op" value="extra_board"> Extra Board work</label>
+          <label><input type="checkbox" name="q23_op" value="overtime"> Overtime opportunities</label>
+        </div>
+      </div>
+      <div class="role-box" id="q23_mech_box" hidden>
+        <div class="role-box-title">23b. Mechanic / Maintenance &mdash; pick up to 3:</div>
+        <div class="choices">
+          <label><input type="checkbox" name="q23_mech" value="first_shift"> First shift</label>
+          <label><input type="checkbox" name="q23_mech" value="second_shift"> Second shift</label>
+          <label><input type="checkbox" name="q23_mech" value="third_shift"> Third shift</label>
+          <label><input type="checkbox" name="q23_mech" value="weekend_shifts"> Weekend shifts</label>
+          <label><input type="checkbox" name="q23_mech" value="rotating"> Rotating shifts</label>
+          <label><input type="checkbox" name="q23_mech" value="overtime"> Overtime opportunities</label>
+        </div>
+      </div>
+      <div class="role-box" id="q23_cler_box" hidden>
+        <div class="role-box-title">23b. Clerical / Admin Support &mdash; pick up to 3:</div>
+        <div class="choices">
+          <label><input type="checkbox" name="q23_cler" value="standard_8_5"> Standard (8&ndash;5) shift</label>
+          <label><input type="checkbox" name="q23_cler" value="early_7_4"> Early start (7&ndash;4) shifts</label>
+          <label><input type="checkbox" name="q23_cler" value="later_9_6"> Later start (9&ndash;6) shifts</label>
+          <label><input type="checkbox" name="q23_cler" value="flex_switching"> More flexibility in switching shifts</label>
+          <label><input type="checkbox" name="q23_cler" value="rotating"> Rotating shifts</label>
+          <label><input type="checkbox" name="q23_cler" value="overtime"> Overtime opportunities</label>
+        </div>
+      </div>
+
+      <!-- Section D -->
+      <div class="section-header">Section D: What is working</div>
+      <div class="q">
+        <div class="q-label">24. What are the best 2&ndash;3 things about working at Metro? (Select up to 3)<span class="req">*</span></div>
+        <div class="choices">
+          <label><input type="checkbox" name="q24" value="serving_stl"> Serving the St. Louis community</label>
+          <label><input type="checkbox" name="q24" value="camaraderie"> Camaraderie with co-workers</label>
+          <label><input type="checkbox" name="q24" value="paycheck"> My paycheck</label>
+          <label><input type="checkbox" name="q24" value="job_stability"> Job stability</label>
+          <label><input type="checkbox" name="q24" value="benefits"> Company benefits</label>
+          <label><input type="checkbox" name="q24" value="recognized"> Being recognized for my efforts</label>
+          <label><input type="checkbox" name="q24" value="advancement"> Opportunities for advancement</label>
+          <label><input type="checkbox" name="q24" value="schedule"> My work schedule</label>
+          <label><input type="checkbox" name="q24" value="other" data-other="q24"> Other:</label>
+        </div>
+        <input type="text" class="other-text" name="q24_other" placeholder="Please specify" hidden>
+      </div>
+      <div class="q">
+        <div class="q-label">25. What kinds of recognition would most make you feel valued as a Metro employee? (Select up to 3)<span class="req">*</span></div>
+        <div class="choices">
+          <label><input type="checkbox" name="q25" value="attendance_points"> Two positive attendance points (per quarter or 6 months)</label>
+          <label><input type="checkbox" name="q25" value="dinners"> Company dinners or appreciation luncheons</label>
+          <label><input type="checkbox" name="q25" value="senior_ack"> Direct acknowledgment from senior leadership</label>
+          <label><input type="checkbox" name="q25" value="metro_gear"> Metro-branded items (jackets, gear)</label>
+          <label><input type="checkbox" name="q25" value="public_recog"> Public recognition (certificates, Hub postings, digital boards)</label>
+          <label><input type="checkbox" name="q25" value="none"> None of these</label>
+          <label><input type="checkbox" name="q25" value="other" data-other="q25"> Other:</label>
+        </div>
+        <input type="text" class="other-text" name="q25_other" placeholder="Please specify" hidden>
+      </div>
+
+      <!-- Section E (Q26 shown here per paper numbering; value mirrored from 23a) -->
+      <div class="section-header">Section E: About you</div>
+      <div class="q">
+        <div class="q-label">26. Your role:<span class="req">*</span></div>
+        <div style="font-size:12px;color:var(--gray);margin:-4px 0 8px 0;font-style:italic;">Prefilled from Q23a. Change it here, and your scheduling options will update.</div>
+        <div class="choices">
+          <label><input type="radio" name="role_echo" value="operator"> Operator / Driver</label>
+          <label><input type="radio" name="role_echo" value="mechanic"> Mechanic / Maintenance</label>
+          <label><input type="radio" name="role_echo" value="clerical"> Clerical / Admin Support</label>
+        </div>
+      </div>
+      <div class="q">
+        <div class="q-label">27. Primary reporting location:<span class="req">*</span></div>
+        <div class="choices">
+          <label><input type="radio" name="q27" value="brentwood" required> Brentwood</label>
+          <label><input type="radio" name="q27" value="debaliviere"> DeBaliviere</label>
+          <label><input type="radio" name="q27" value="illinois"> Illinois</label>
+          <label><input type="radio" name="q27" value="ewing"> Ewing</label>
+          <label><input type="radio" name="q27" value="twentyninth"> 29th St</label>
+          <label><input type="radio" name="q27" value="main_shop"> Main Shop</label>
+          <label><input type="radio" name="q27" value="call_a_ride"> Call-A-Ride</label>
+          <label><input type="radio" name="q27" value="headquarters"> Headquarters</label>
+          <label><input type="radio" name="q27" value="other" data-other="q27"> Other:</label>
+        </div>
+        <input type="text" class="other-text" name="q27_other" placeholder="Please specify" hidden>
+      </div>
+      <div class="q">
+        <div class="q-label">28. Time at Metro:<span class="req">*</span></div>
+        <div class="choices">
+          <label><input type="radio" name="q28" value="lt_1" required> Less than 1 year</label>
+          <label><input type="radio" name="q28" value="y1_7"> 1&ndash;7 years</label>
+          <label><input type="radio" name="q28" value="y8_20"> 8&ndash;20 years</label>
+          <label><input type="radio" name="q28" value="y20plus"> 20+ years</label>
+        </div>
+      </div>
+
+      <!-- Section F -->
+      <div class="section-header">Section F: Your voice</div>
+      <div class="q">
+        <div class="q-label">29. Please share the ONE most important thing you want Metro leadership to know about your employee experience.</div>
+        <div style="font-size:12.5px;color:var(--gray);margin:-4px 0 8px 0;">Something that needs to change, something that is working well, or both.</div>
+        <textarea class="q29" name="q29" rows="5" placeholder="Your voice matters..."></textarea>
+      </div>
+
+      <div class="submit-wrap">
+        <button type="submit" class="submit-btn" id="submit-btn">Submit my responses</button>
+        <div class="status" id="status" role="alert"></div>
+      </div>
+    </form>
+  </div>
+
+  <div class="thanks" id="thanks">
+    <h2>Thank you.</h2>
+    <p>The results and leadership decisions will be shared with all employees.</p>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // =========================================================================
+  // Configuration -- target feature service for submissions.
+  // Derived from Connect publish artifacts. Confirm at: {URL}?f=json
+  // =========================================================================
+  const FEATURE_SERVICE_BASE =
+    'https://services2.arcgis.com/ZV8Mb62EedSw2aTU/ArcGIS/rest/services' +
+    '/service_30067663621b4b5f9b95d15c9a950180/FeatureServer/0';
+
+  // Section A rows: (number, statement) from DOCX.
+  const SECTION_A = [
+    [2,  "I feel safe doing my job."],
+    [3,  "I have the training to handle difficult passenger situations."],
+    [4,  "When I need backup during an incident, help comes quickly."],
+    [5,  "I have the tools, equipment, and vehicles I need."],
+    [6,  "The break areas, restrooms, and layover facilities are acceptable."],
+    [7,  "My immediate supervisor treats me with respect."],
+    [8,  "Senior leadership treats front-line employees with respect."],
+    [9,  "My supervisor applies the rules to everyone the same."],
+    [10, "The attendance policy is fair."],
+    [11, "I know who to go to with work problems."],
+    [12, "When I raise a concern, something actually gets done."],
+    [13, "I\u2019m kept informed about changes that affect my work."],
+    [14, "I receive clear explanations of the policies that affect my job."],
+    [15, "My workload and pace are sustainable week after week."],
+    [16, "I can use my approved time off when I need it."],
+    [17, "My work schedules are easy to manage."],
+    [18, "My work is recognized when I do it well."],
+    [19, "I take pride in the work I do each day."]
+  ];
+  const RATING_LABELS = [
+    ['4', 'Strongly Agree'],
+    ['3', 'Agree'],
+    ['2', 'Disagree'],
+    ['1', 'Strongly Disagree']
+  ];
+
+  // Build Section A matrix rows using safe DOM creation (no innerHTML).
+  function buildMatrix() {
+    const body = document.getElementById('matrix-body');
+    SECTION_A.forEach(([n, text]) => {
+      const row = document.createElement('div');
+      row.className = 'matrix-row';
+      row.dataset.row = String(n);
+
+      const stmt = document.createElement('div');
+      stmt.className = 'stmt';
+      stmt.textContent = n + '. ' + text;
+      row.appendChild(stmt);
+
+      RATING_LABELS.forEach(([val, lbl], i) => {
+        const cell = document.createElement('div');
+        cell.className = 'rate';
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = 'q' + n + '_rating';
+        input.value = val;
+        input.setAttribute('aria-label', n + '. ' + text + ' — ' + lbl);
+        if (i === 0) input.required = true;
+        cell.appendChild(input);
+        row.appendChild(cell);
+      });
+
+      const starLabel = document.createElement('label');
+      starLabel.className = 'star-label';
+      starLabel.dataset.starFor = String(n);
+      starLabel.setAttribute('aria-label', 'Mark statement ' + n + ' as a top-3 priority');
+      const starInput = document.createElement('input');
+      starInput.type = 'checkbox';
+      starInput.name = 'q' + n + '_star';
+      starInput.value = 'yes';
+      starLabel.appendChild(starInput);
+      const starGlyph = document.createElement('span');
+      starGlyph.className = 'star-glyph';
+      starGlyph.textContent = '\u2605';
+      starLabel.appendChild(starGlyph);
+      row.appendChild(starLabel);
+
+      body.appendChild(row);
+    });
+  }
+
+  // Star cap enforcement (max 3) + live counter + row highlight.
+  function onStarChange(e) {
+    const stars = document.querySelectorAll('input[name$="_star"]:checked');
+    if (stars.length > 3) {
+      e.target.checked = false;
+      flash('You can choose at most 3 priorities.');
+      return;
+    }
+    const count = document.querySelectorAll('input[name$="_star"]:checked').length;
+    document.getElementById('star-count').textContent = String(count);
+    document.querySelectorAll('.matrix-row').forEach(row => {
+      const n = row.dataset.row;
+      const starInput = row.querySelector('input[name="q' + n + '_star"]');
+      row.classList.toggle('is-starred', !!(starInput && starInput.checked));
+    });
+  }
+
+  // Role gating -- show only the matching Q23 box.
+  function onRoleChange() {
+    const checked = document.querySelector('input[name="role"]:checked');
+    const role = checked ? checked.value : null;
+    const boxes = {
+      operator: 'q23_op_box',
+      mechanic: 'q23_mech_box',
+      clerical: 'q23_cler_box'
+    };
+    Object.keys(boxes).forEach(r => {
+      const box = document.getElementById(boxes[r]);
+      const show = (r === role);
+      box.hidden = !show;
+      if (!show) box.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    });
+    const empty = document.getElementById('q23_empty');
+    if (empty) empty.hidden = !!role;
+  }
+
+  // "Other" reveal -- show the text input only when Other is checked.
+  function onOtherToggle(e) {
+    const key = e.target.dataset.other;
+    if (!key) return;
+    const textInput = document.querySelector('input[name="' + key + '_other"]');
+    if (!textInput) return;
+    textInput.hidden = !e.target.checked;
+    if (!e.target.checked) textInput.value = '';
+  }
+
+  // Checkbox cap (Q24/Q25 max 3 selections).
+  function onCheckboxCap(e, name, max) {
+    const checked = document.querySelectorAll('input[name="' + name + '"]:checked').length;
+    if (checked > max) {
+      e.target.checked = false;
+      flash('You can select at most ' + max + ' for this question.');
+    }
+  }
+
+  // Inline error flash.
+  let flashTimer = null;
+  function flash(msg) {
+    const s = document.getElementById('status');
+    s.textContent = msg;
+    s.className = 'status is-error';
+    if (flashTimer) clearTimeout(flashTimer);
+    flashTimer = setTimeout(() => { s.className = 'status'; }, 3500);
+  }
+
+  // Gather form values into attributes object for addFeatures payload.
+  function gatherAttributes() {
+    const form = document.getElementById('pulse-form');
+    const attrs = {};
+
+    const singles = ['retention', 'role',
+      'q20_stress', 'q21_verbal', 'q22_physical',
+      'q27', 'q28'];
+    singles.forEach(n => {
+      const el = form.querySelector('input[name="' + n + '"]:checked');
+      if (el) attrs[n] = el.value;
+    });
+
+    for (let n = 2; n <= 19; n++) {
+      const rating = form.querySelector('input[name="q' + n + '_rating"]:checked');
+      if (rating) attrs['q' + n + '_rating'] = parseInt(rating.value, 10);
+      const star = form.querySelector('input[name="q' + n + '_star"]:checked');
+      attrs['q' + n + '_star'] = star ? 'yes' : 'no';
+    }
+
+    attrs['star_total'] = Array.from(form.querySelectorAll('input[name$="_star"]:checked')).length;
+
+    ['q23_op', 'q23_mech', 'q23_cler'].forEach(n => {
+      const vals = Array.from(form.querySelectorAll('input[name="' + n + '"]:checked')).map(el => el.value);
+      if (vals.length) attrs[n] = vals.join(',');
+    });
+
+    ['q24', 'q25'].forEach(n => {
+      const vals = Array.from(form.querySelectorAll('input[name="' + n + '"]:checked')).map(el => el.value);
+      if (vals.length) attrs[n] = vals.join(',');
+      const otherInput = form.querySelector('input[name="' + n + '_other"]');
+      if (otherInput && otherInput.value.trim()) attrs[n + '_other'] = otherInput.value.trim();
+    });
+
+    const q27Other = form.querySelector('input[name="q27_other"]');
+    if (q27Other && q27Other.value.trim()) attrs['q27_other'] = q27Other.value.trim();
+
+    const q29 = form.querySelector('textarea[name="q29"]');
+    if (q29 && q29.value.trim()) attrs['q29'] = q29.value.trim();
+
+    return attrs;
+  }
+
+  // Business-rule validation.
+  function validate(attrs) {
+    const errs = [];
+    if (!attrs.q24) errs.push('Please answer Q24 (best things about Metro).');
+    if (!attrs.q25) errs.push('Please answer Q25 (recognition preferences).');
+    if (attrs.q24 && attrs.q24.split(',').length > 3) errs.push('Q24: up to 3 only.');
+    if (attrs.q25 && attrs.q25.split(',').length > 3) errs.push('Q25: up to 3 only.');
+    if (attrs.star_total > 3) errs.push('Section A: at most 3 stars.');
+    if (attrs.role === 'operator' && !attrs.q23_op) errs.push('Q23: please pick your top scheduling preferences (up to 3).');
+    if (attrs.role === 'mechanic' && !attrs.q23_mech) errs.push('Q23: please pick your top scheduling preferences (up to 3).');
+    if (attrs.role === 'clerical' && !attrs.q23_cler) errs.push('Q23: please pick your top scheduling preferences (up to 3).');
+    for (let n = 2; n <= 19; n++) {
+      if (attrs['q' + n + '_rating'] === undefined) {
+        errs.push('Q' + n + ': please rate this statement.');
+        break;
+      }
+    }
+    return errs;
+  }
+
+  // Submit -- POST to {FEATURE_SERVICE}/addFeatures.
+  async function onSubmit(e) {
+    e.preventDefault();
+    const form = document.getElementById('pulse-form');
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+
+    const attrs = gatherAttributes();
+    const errs = validate(attrs);
+    if (errs.length) {
+      flash(errs[0]);
+      return;
+    }
+
+    const btn = document.getElementById('submit-btn');
+    const status = document.getElementById('status');
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+    status.className = 'status';
+
+    const feature = { attributes: attrs };
+
+    try {
+      const resp = await fetch(FEATURE_SERVICE_BASE + '/addFeatures', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          f: 'json',
+          features: JSON.stringify([feature])
+        })
+      });
+      const data = await resp.json();
+      if (data.error) {
+        throw new Error(data.error.message || 'Submit failed.');
+      }
+      const ok = data.addResults && data.addResults[0] && data.addResults[0].success;
+      if (!ok) {
+        const msg = (data.addResults && data.addResults[0] && data.addResults[0].error && data.addResults[0].error.description)
+          || 'Submit did not complete.';
+        throw new Error(msg);
+      }
+      document.getElementById('form-wrap').style.display = 'none';
+      document.getElementById('thanks').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      status.className = 'status is-error';
+      status.textContent = 'Could not submit: ' + err.message + ' Please try again in a moment.';
+      btn.disabled = false;
+      btn.textContent = 'Submit my responses';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    buildMatrix();
+    document.querySelectorAll('input[name$="_star"]').forEach(el => {
+      el.addEventListener('change', onStarChange);
+    });
+    // Sync between 23a (name="role" — canonical) and Q26 (name="role_echo" — mirror)
+    // Using different names so the browser's same-name radio dedup doesn't cause
+    // ping-pong when we programmatically set .checked on the partner group.
+    function mirror(sourceName, targetName) {
+      const src = document.querySelector('input[name="' + sourceName + '"]:checked');
+      const val = src ? src.value : null;
+      document.querySelectorAll('input[name="' + targetName + '"]').forEach(r => {
+        r.checked = (r.value === val);
+      });
+    }
+    document.querySelectorAll('input[name="role"]').forEach(el => {
+      el.addEventListener('change', () => {
+        mirror('role', 'role_echo');
+        onRoleChange();
+      });
+    });
+    document.querySelectorAll('input[name="role_echo"]').forEach(el => {
+      el.addEventListener('change', () => {
+        mirror('role_echo', 'role');
+        onRoleChange();
+      });
+    });
+    document.querySelectorAll('input[data-other]').forEach(el => {
+      el.addEventListener('change', onOtherToggle);
+    });
+    document.querySelectorAll('input[name="q24"]').forEach(el => {
+      el.addEventListener('change', e => onCheckboxCap(e, 'q24', 3));
+    });
+    document.querySelectorAll('input[name="q25"]').forEach(el => {
+      el.addEventListener('change', e => onCheckboxCap(e, 'q25', 3));
+    });
+    document.getElementById('pulse-form').addEventListener('submit', onSubmit);
+  });
+})();
+</script>
+</body>
+</html>
