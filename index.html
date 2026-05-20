@@ -336,6 +336,22 @@
   }
   textarea.q29:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 2px rgba(0,30,98,0.15); }
 
+  /* Character-limit helpers */
+  .char-note {
+    font-size: 12px;
+    color: var(--gray);
+    margin-top: 4px;
+    font-style: italic;
+  }
+  .char-counter {
+    font-size: 12px;
+    color: var(--gray);
+    margin-top: 4px;
+    text-align: right;
+  }
+  .char-counter.warn { color: #b86600; }
+  .char-counter.crit { color: var(--red); font-weight: 600; }
+
   /* Narrow phone tweaks */
   @media (max-width: 380px) {
     .matrix-header, .matrix-row {
@@ -498,7 +514,8 @@
           <label><input type="checkbox" name="q24" value="schedule"> My work schedule</label>
           <label><input type="checkbox" name="q24" value="other" data-other="q24"> Other:</label>
         </div>
-        <input type="text" class="other-text" name="q24_other" placeholder="Please specify" hidden>
+        <input type="text" class="other-text" name="q24_other" placeholder="Please specify" maxlength="8000" hidden>
+        <div class="char-note" data-note-for="q24_other" hidden>Up to 8,000 characters.</div>
       </div>
       <div class="q">
         <div class="q-label">25. What kinds of recognition would most make you feel valued as a Metro employee? (Select up to 3)<span class="req">*</span></div>
@@ -511,7 +528,8 @@
           <label><input type="checkbox" name="q25" value="none"> None of these</label>
           <label><input type="checkbox" name="q25" value="other" data-other="q25"> Other:</label>
         </div>
-        <input type="text" class="other-text" name="q25_other" placeholder="Please specify" hidden>
+        <input type="text" class="other-text" name="q25_other" placeholder="Please specify" maxlength="8000" hidden>
+        <div class="char-note" data-note-for="q25_other" hidden>Up to 8,000 characters.</div>
       </div>
 
       <!-- Section E (Q26 shown here per paper numbering; value mirrored from 23a) -->
@@ -538,7 +556,8 @@
           <label><input type="radio" name="q27" value="headquarters"> Headquarters</label>
           <label><input type="radio" name="q27" value="other" data-other="q27"> Other:</label>
         </div>
-        <input type="text" class="other-text" name="q27_other" placeholder="Please specify" hidden>
+        <input type="text" class="other-text" name="q27_other" placeholder="Please specify" maxlength="8000" hidden>
+        <div class="char-note" data-note-for="q27_other" hidden>Up to 8,000 characters.</div>
       </div>
       <div class="q">
         <div class="q-label">28. Time at Metro:<span class="req">*</span></div>
@@ -555,7 +574,8 @@
       <div class="q">
         <div class="q-label">29. Please share the ONE most important thing you want Metro leadership to know about your employee experience.</div>
         <div style="font-size:12.5px;color:var(--gray);margin:-4px 0 8px 0;">Something that needs to change, something that is working well, or both.</div>
-        <textarea class="q29" name="q29" rows="5" placeholder="Your voice matters..."></textarea>
+        <textarea class="q29" name="q29" rows="5" maxlength="8000" placeholder="Your voice matters..."></textarea>
+        <div class="char-counter" id="q29-counter">8,000 characters remaining</div>
       </div>
 
       <div class="submit-wrap">
@@ -700,6 +720,8 @@
     if (!textInput) return;
     textInput.hidden = !e.target.checked;
     if (!e.target.checked) textInput.value = '';
+    const note = document.querySelector('[data-note-for="' + key + '_other"]');
+    if (note) note.hidden = !e.target.checked;
   }
 
   // Checkbox cap (Q24/Q25 max 3 selections).
@@ -874,6 +896,20 @@
     document.querySelectorAll('input[name="q25"]').forEach(el => {
       el.addEventListener('change', e => onCheckboxCap(e, 'q25', 3));
     });
+    // Live character counter for q29 (open-ended textarea).
+    const q29 = document.querySelector('textarea[name="q29"]');
+    const q29Counter = document.getElementById('q29-counter');
+    if (q29 && q29Counter) {
+      const MAX = 8000;
+      const updateQ29Counter = () => {
+        const remaining = MAX - q29.value.length;
+        q29Counter.textContent = remaining.toLocaleString() + ' characters remaining';
+        q29Counter.classList.toggle('warn', remaining < 500 && remaining >= 100);
+        q29Counter.classList.toggle('crit', remaining < 100);
+      };
+      q29.addEventListener('input', updateQ29Counter);
+      updateQ29Counter();
+    }
     document.getElementById('pulse-form').addEventListener('submit', onSubmit);
   });
 })();
